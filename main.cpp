@@ -4,7 +4,7 @@
 #include <memory>
 #include <map>
 
-inline void setDataBase(std::map<std::string, int>* dataBase) {
+inline void setDataBase(std::map<std::string, int>& dataBase) {
   std::string name = "";
   std::cout << "Enter 'ext' to exit setting data base!" << std::endl;
   std::cout << "-----------------------------------------" << std::endl;
@@ -21,7 +21,7 @@ inline void setDataBase(std::map<std::string, int>* dataBase) {
     if (count < 0) throw std::invalid_argument("Invalid count of product");
 
     try {
-      dataBase->insert(std::make_pair(name, count));
+      dataBase.insert(std::make_pair(name, count));
       std::cout << "Added!" << std::endl;
     } catch (const std::invalid_argument& x) {
       std::cerr << x.what();
@@ -36,81 +36,39 @@ class Bin {
   std::string nameOfProduct = "";
   int countOfProduct = 0;
 
-  inline int countEqualProducts(std::map<std::string, int>* dataBase) const {
-    int counter = 0;
-    for (auto it = dataBase->begin(); it != dataBase->end(); it++) {
-      if (it->first == nameOfProduct) counter++;
-    }
-
-    return counter;
-  }
-
  public:
-  inline void add(std::map<std::string, int>* dataBase) {
+  inline void add(std::map<std::string, int>& dataBase) {
     std::cout << "Enter the name of product: ";
     std::cin >> nameOfProduct;
 
-    int counter = countEqualProducts(dataBase);
-    if (counter <= 0 || counter > 1) throw std::invalid_argument("Invalid count");
+    std::cout << "Enter the count of product: ";
+    std::cin >> countOfProduct;
+
+    dataBase[nameOfProduct] -= countOfProduct;
+    if (countOfProduct <= 0 || dataBase[nameOfProduct] < 0)
+      throw std::invalid_argument("Invalid count");
 
     try {
-      std::cout << "Enter the count of product: ";
-      std::cin >> countOfProduct;
-
-      dataBase->find(nameOfProduct)->second -= countOfProduct;
-      if (countOfProduct <= 0 ||
-          countOfProduct < dataBase->find(nameOfProduct)->second)
-        throw std::invalid_argument("Invalid count");
-
-      try {
-        if (bin.empty()) {
-          bin.insert(std::make_pair(nameOfProduct, countOfProduct));
-        } else {
-          int countInBase = dataBase->find(nameOfProduct)->second;
-          int countInBin = bin.find(nameOfProduct)->second;
-
-          if (countInBase < countOfProduct + countInBin)
-            throw std::invalid_argument("Too many products");
-
-          try {
-            bin.insert(std::make_pair(nameOfProduct, countOfProduct));
-          } catch (const std::invalid_argument& x) {
-            std::cerr << x.what();
-          }
-        }
-
+        bin.insert(std::make_pair(nameOfProduct, countOfProduct));
         std::cout << "Added!" << std::endl;
       } catch (const std::invalid_argument& x) {
-        std::cerr << x.what();
-      }
-    } catch (const std::invalid_argument& x) {
       std::cerr << x.what();
     }
   }
 
-  inline void remove(std::map<std::string, int>* dataBase) {
+  inline void remove(std::map<std::string, int>& dataBase) {
     std::cout << "Enter the name of product: ";
     std::cin >> nameOfProduct;
 
-    int counter = countEqualProducts(dataBase);
-    if (counter <= 0 || counter > 1)
+    std::cout << "Enter the count of products to delete: ";
+    std::cin >> countOfProduct;
+
+    if (countOfProduct <= 0 || bin[nameOfProduct] - countOfProduct < 0)
       throw std::invalid_argument("Invalid count");
 
     try {
-      std::cout << "Enter the count of products to delete: ";
-      std::cin >> countOfProduct;
-
-      bin.find(nameOfProduct)->second -= countOfProduct;
-      if (countOfProduct <= 0 || bin.find(nameOfProduct)->second < 0)
-        throw std::invalid_argument("Invalid count");
-
-      try {
-        bin.erase(nameOfProduct);
-        std::cout << "Removed!" << std::endl;
-      } catch (const std::invalid_argument& x) {
-        std::cerr << x.what();
-      }
-
+      bin[nameOfProduct] -= countOfProduct;
+      std::cout << "Removed!" << std::endl;
     } catch (const std::invalid_argument& x) {
       std::cerr << x.what();
     }
@@ -119,7 +77,7 @@ class Bin {
 
 enum class CommandType { ADD = 1, REMOVE, EXIT };
 
-inline void commandKeyboard(std::map<std::string, int>* dataBase, std::shared_ptr<Bin> bin) {
+inline void commandKeyboard(std::map<std::string, int>& dataBase, std::shared_ptr<Bin> bin) {
   setDataBase(dataBase);
 
   int command = 0;
@@ -129,15 +87,16 @@ inline void commandKeyboard(std::map<std::string, int>* dataBase, std::shared_pt
               << std::endl;
     std::cout << static_cast<int>(CommandType::EXIT) << "# Exit" << std::endl;
     std::cin >> command;
+    CommandType input_command = static_cast<CommandType>(command);
 
-    switch (command) {
-      case static_cast<int>(CommandType::ADD):
+    switch (input_command) {
+      case CommandType::ADD:
         bin->add(dataBase);
         break;
-      case static_cast<int>(CommandType::REMOVE):
+      case CommandType::REMOVE:
         bin->remove(dataBase);
         break;
-      case static_cast<int>(CommandType::EXIT):
+      case CommandType::EXIT:
         std::cout << "Program finished!" << std::endl;
         break;
       default:
@@ -152,5 +111,5 @@ inline void commandKeyboard(std::map<std::string, int>* dataBase, std::shared_pt
 int main() {
   std::map<std::string, int> dataBase;
   std::shared_ptr<Bin> bin = std::make_shared<Bin>();
-  commandKeyboard(&dataBase, bin);
+  commandKeyboard(dataBase, bin);
 }
