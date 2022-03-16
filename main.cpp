@@ -18,9 +18,8 @@ inline void setDataBase(std::map<std::string, int>& dataBase) {
     int count = 0;
     std::cin >> count;
 
-    if (count < 0) throw std::invalid_argument("Invalid count of product");
-
     try {
+      if (count < 0) throw std::invalid_argument("Invalid count of product\n");
       dataBase.insert(std::make_pair(name, count));
       std::cout << "Added!" << std::endl;
     } catch (const std::invalid_argument& x) {
@@ -45,10 +44,10 @@ class Bin {
     std::cin >> countOfProduct;
 
     dataBase[nameOfProduct] -= countOfProduct;
-    if (countOfProduct <= 0 || dataBase[nameOfProduct] < 0)
-      throw std::invalid_argument("Invalid count");
 
     try {
+      if (countOfProduct <= 0 || dataBase[nameOfProduct] < 0)
+        throw std::invalid_argument("Invalid count\n");
         bin.insert(std::make_pair(nameOfProduct, countOfProduct));
         std::cout << "Added!" << std::endl;
       } catch (const std::invalid_argument& x) {
@@ -63,10 +62,9 @@ class Bin {
     std::cout << "Enter the count of products to delete: ";
     std::cin >> countOfProduct;
 
-    if (countOfProduct <= 0 || bin[nameOfProduct] - countOfProduct < 0)
-      throw std::invalid_argument("Invalid count");
-
     try {
+      if (countOfProduct <= 0 || bin[nameOfProduct] - countOfProduct < 0)
+        throw std::invalid_argument("Invalid count\n");
       bin[nameOfProduct] -= countOfProduct;
       std::cout << "Removed!" << std::endl;
     } catch (const std::invalid_argument& x) {
